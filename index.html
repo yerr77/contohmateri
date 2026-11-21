@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WIFI TETANGGA — Ruang Komunitas Mahasiswa</title>
+  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app" class="app-shell"></div>
+
+  <script>
+    const ICONS = {
+      home: '<path d="m3 11 9-8 9 8" /><path d="M5 10v10h14V10M9 20v-6h6v6" />',
+      compass: '<circle cx="12" cy="12" r="9" /><path d="m15.5 8.5-2.1 4.9-4.9 2.1 2.1-4.9 4.9-2.1Z" />',
+      users: '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8" />',
+      calendar: '<rect x="3" y="5" width="18" height="16" rx="2" /><path d="M16 3v4M8 3v4M3 10h18" />',
+      briefcase: '<rect x="3" y="7" width="18" height="13" rx="2" /><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M3 12h18" />',
+      bookmark: '<path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1Z" />',
+      bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4" />',
+      search: '<circle cx="11" cy="11" r="7" /><path d="m20 20-4-4" />',
+      plus: '<path d="M12 5v14M5 12h14" />',
+      message: '<path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4Z" />',
+      heart: '<path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8l1.1 1.1L12 21l7.8-7.5a5.5 5.5 0 0 0 1-8.9Z" />',
+      share: '<circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="m8.6 10.5 6.8-4M8.6 13.5l6.8 4" />',
+      more: '<circle cx="5" cy="12" r="1" /><circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" />',
+      chevron: '<path d="m9 18 6-6-6-6" />',
+      pin: '<path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" />',
+      clock: '<circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" />',
+      check: '<path d="m5 12 4 4L19 6" />',
+      x: '<path d="m6 6 12 12M18 6 6 18" />',
+      menu: '<path d="M4 7h16M4 12h16M4 17h16" />',
+      image: '<rect x="3" y="4" width="18" height="16" rx="2" /><circle cx="8.5" cy="9" r="1.5" /><path d="m21 15-5-5L5 20" />',
+      send: '<path d="m22 2-7 20-4-9-9-4Z" /><path d="M22 2 11 13" />',
+      arrow: '<path d="M5 12h14M13 6l6 6-6 6" />',
+      user: '<circle cx="12" cy="8" r="4" /><path d="M4 21a8 8 0 0 1 16 0" />',
+      spark: '<path d="m12 3 1.5 5.5L19 10l-5.5 1.5L12 17l-1.5-5.5L5 10l5.5-1.5L12 3ZM19 17l.7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7L19 17Z" />',
+      filter: '<path d="M4 6h16M7 12h10M10 18h4" />',
+      edit: '<path d="M12 20h9" /><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4Z" />',
+      award: '<circle cx="12" cy="8" r="5" /><path d="m8.5 12-1 9 4.5-3 4.5 3-1-9" />',
+      book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5Z" /><path d="M4 6.5v13" />',
+      trending: '<path d="m3 17 6-6 4 4 8-9M15 6h6v6" />'
+    };
+
+    function icon(name, size = 20) {
+      return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name] || ""}</svg>`;
+    }
+
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    const avatar = (id) => `https://i.pravatar.cc/120?u=narasi-${id}`;
+
+    const photos = {
+      hero: "https://images.unsplash.com/photo-1611087802810-046bb671e644?fit=crop&q=85&w=1400",
+      meetup: "https://images.unsplash.com/photo-1557734864-c78b6dfef1b1?fit=crop&q=85&w=1000",
+      social: "https://images.unsplash.com/photo-1566409031818-9508be68fc74?fit=crop&q=85&w=900",
+      creative: "https://images.unsplash.com/photo-1700229792976-b579f2e97fbb?fit=crop&q=85&w=900",
+      students: "https://images.unsplash.com/photo-1717231855727-06fa2b4c431c?fit=crop&q=85&w=900",
+      event: "https://images.unsplash.com/photo-1641391460340-df6898498efd?fit=crop&q=85&w=900"
+    };
+
+    const navItems = [
+      { label: "Beranda", icon: "home" },
+      { label: "Jelajahi", icon: "compass" },
+      { label: "Komunitas", icon: "users" },
+      { label: "Agenda", icon: "calendar" },
+      { label: "Peluang", icon: "briefcase" },
+      { label: "Tersimpan", icon: "bookmark" },
+      { label: "Profil", icon: "user" }
+    ];
+
+    const communityData = [
+      {
+        name: "Google Developer Student Club",
+        short: "GDSC",
+        color: "#ed503c",
+        members: "2.4K",
+        cat: "Teknologi",
+        desc: "Belajar, berkolaborasi, dan membangun solusi teknologi berdampak."
+      },
+      {
+        name: "UI/UX Indonesia Campus",
+        short: "UX",
+        color: "#7758d9",
+        members: "1.8K",
+        cat: "Desain",
+        desc: "Ruang bertumbuh para desainer muda dari berbagai kampus."
+      },
+      {
+        name: "Kampus Mengajar",
+        short: "KM",
+        color: "#17a673",
+        members: "3.1K",
+        cat: "Sosial",
+        desc: "Bergerak bersama untuk pendidikan Indonesia yang lebih baik."
+      },
+      {
+        name: "AIESEC Future Leaders",
+        short: "AFL",
+        color: "#2675d8",
+        members: "1.2K",
+        cat: "Kepemimpinan",
+        desc: "Kembangkan potensi kepemimpinan dan jejaring globalmu."
+      },
+      {
+        name: "Student Entrepreneur Hub",
+        short: "SE",
+        color: "#e49b21",
+        members: "980",
+        cat: "Bisnis",
+        desc: "Tempat founder mahasiswa bertukar cerita dan bertumbuh."
+      },
+      {
+        name: "Bumi Muda Indonesia",
+        short: "BM",
+        color: "#19947c",
+        members: "1.5K",
+        cat: "Lingkungan",
+        desc: "Aksi nyata generasi muda untuk bumi yang berkelanjutan."
+      }
+    ];
+
+    const events = [
+      {
+        day: "24",
+        month: "MEI",
+        title: "Design Leadership: Beyond the Pixels",
+        type: "Seminar & Networking",
+        place: "Aula Timur, Kampus ITB",
+        time: "13.00 WIB",
+        image: photos.event,
+        color: "#7758d9"
+      },
+      {
+        day: "27",
+        month: "MEI",
+        title: "National Student Innovation Forum",
+        type: "Konferensi",
+        place: "Universitas Kristen Satya Wacana",
+        time: "09.00 WIB",
+        image: photos.meetup,
+        color: "#ed503c"
+      },
+      {
+        day: "02",
+        month: "JUN",
+        title: "Volunteering for Eastern Indonesia",
+        type: "Sosial & Relawan",
+        place: "Online via Zoom",
+        time: "19.00 WIB",
+        image: photos.social,
+        color: "#18a273"
+      },
+      {
+        day: "08",
+        month: "JUN",
+        title: "Creative Market & Campus Festival",
+        type: "Festival",
+        place: "Universitas Gadjah Mada",
+        time: "10.00 WIB",
+        image: photos.creative,
+        color: "#e49b21"
+      }
+    ];
+
+    const opportunities = [
+      {
+        org: "GoTo Impact Foundation",
+        role: "Product Design Intern",
+        kind: "Magang",
+        location: "Jakarta · Hybrid",
+        deadline: "8 hari lagi",
+        logo: "G",
+        color: "#16986b"
+      },
+      {
+        org: "Tanoto Foundation",
+        role: "TELADAN Scholarship 2025",
+        kind: "Beasiswa",
+        location: "Seluruh Indonesia",
+        deadline: "12 hari lagi",
+        logo: "T",
+        color: "#da4d3c"
+      },
+      {
+        org: "Kementerian Pendidikan",
+        role: "Kampus Mengajar Angkatan 9",
+        kind: "Relawan",
+        location: "Berbagai kota",
+        deadline: "18 hari lagi",
+        logo: "KM",
+        color: "#294f8c"
+      },
+      {
+        org: "ASEAN Youth Network",
+        role: "Youth Delegate Singapore",
+        kind: "Exchange",
+        location: "Singapore",
+        deadline: "21 hari lagi",
+        logo: "AY",
+        color: "#7657d4"
+      },
+      {
+        org: "BRI Ventures",
+        role: "Business Analyst Intern",
+        kind: "Magang",
+        location: "Jakarta · On-site",
+        deadline: "25 hari lagi",
+        logo: "B",
+        color: "#2675d8"
+      }
+    ];
+
+    const state = {
+      page: "Beranda",
+      search: "",
+      mobile: false,
+      notif: false,
+      composer: false,
+      post: "",
+      toast: "",
+      liked: false,
+      joined: [],
+      registered: [],
+      savedOpp: [],
+      saved: true,
+      exploreTopic: "Semua",
+      communityCat: "Semua",
+      agendaView: "Mendatang",
+      oppKind: "Semua",
+      savedTab: "Semua"
+    };
+
+    let toastTimer = null;
+
+    function notify(msg) {
+      state.toast = msg;
+      render();
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => {
+        state.toast = "";
+        render();
+      }, 2300);
+    }
+
+    function navigate(p) {
+      state.page = p;
+      state.mobile = false;
+      state.notif = false;
+      render();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function toggleList(list, val, addedMsg, removedMsg) {
+      const idx = list.indexOf(val);
+      if (idx >= 0) {
+        list.splice(idx, 1);
+        if (removedMsg) notify(removedMsg);
+      } else {
+        list.push(val);
+        if (addedMsg) notify(addedMsg);
+      }
+      render();
+    }
+
+    function renderPageHeader({ eyebrow, title, accent, desc, actionHtml = "" }) {
+      return `
+        <section class="page-header">
+          <div>
+            <p class="eyebrow">${eyebrow}</p>
+            <h1>${title} <em>${accent}</em></h1>
+            <p>${desc}</p>
+          </div>
+          ${actionHtml}
+        </section>
+      `;
+    }
+
+    function renderCommunityCard(item, idx) {
+      const isJoined = state.joined.includes(item.name);
+      return `
+        <article class="community-card lift">
+          <div class="community-card-top">
+            <div class="community-logo" style="background: ${item.color}">${item.short}</div>
+            <span>${item.cat}</span>
+          </div>
+          <h3>${item.name}</h3>
+          <p>${item.desc}</p>
+          <div class="member-row">
+            <div>
+              ${["1", "2", "3"].map((x) => `<img src="${avatar(item.short + x)}" alt="" />`).join("")}
+            </div>
+            <span>${item.members} anggota</span>
+          </div>
+          <button class="${isJoined ? "joined" : ""}" data-action="toggle-join" data-idx="${idx}">
+            ${isJoined ? `${icon("check", 16)} Tergabung` : `${icon("plus", 16)} Gabung Komunitas`}
+          </button>
+        </article>
+      `;
+    }
+
+    function renderEventCard(item, idx, isHomePreview = false) {
+      const isReg = state.registered.includes(item.title);
+      return `
+        <article class="event-card lift">
+          <div class="event-card-img">
+            <img src="${item.image}" alt="${esc(item.title)}" />
+            <span style="background: ${item.color}">${item.type}</span>
+            <div>
+              <b>${item.day}</b>
+              <small>${item.month}</small>
+            </div>
+          </div>
+          <div class="event-card-body">
+            <h3>${item.title}</h3>
+            <p>${icon("clock", 15)}${item.time}</p>
+            <p>${icon("pin", 15)}${item.place}</p>
+            <button
+              class="${!isHomePreview && isReg ? "registered" : ""}"
+              data-action="${isHomePreview ? "home-event-reg" : "toggle-register"}"
+              data-idx="${idx}"
+            >
+              ${!isHomePreview && isReg ? `${icon("check", 16)} Terdaftar` : "Lihat & Daftar"}
+            </button>
+          </div>
+        </article>
+      `;
+    }
+
+    function renderEmpty({ iconName, title, text, hasAction = false }) {
+      return `
+        <div class="empty">
+          <span>${icon(iconName, 28)}</span>
+          <h3>${title}</h3>
+          <p>${text}</p>
+          ${hasAction ? `<button data-action="nav" data-page="Jelajahi">Mulai jelajahi ${icon("arrow", 15)}</button>` : ""}
+        </div>
+      `;
+    }
+
+    function renderHomePage() {
+      const likesCount = state.liked ? 129 : 128;
+      return `
+        <div class="page-enter">
+          <section class="welcome-row">
+            <div>
+              <p class="eyebrow">SELAMAT DATANG KEMBALI, KEPIN</p>
+              <h1>Temukan ruangmu,<br /><em>tumbuh bersama.</em></h1>
+              <p>Terhubung, berbagi gagasan, dan ciptakan dampak bersama mahasiswa dari seluruh Indonesia.</p>
+            </div>
+            <div class="quick-stats">
+              <div>
+                <span class="stat-icon coral">${icon("users")}</span>
+                <p>
+                  <strong>12</strong>
+                  <small>Komunitas diikuti</small>
+                </p>
+              </div>
+              <div>
+                <span class="stat-icon purple">${icon("message")}</span>
+                <p>
+                  <strong>28</strong>
+                  <small>Diskusi bulan ini</small>
+                </p>
+              </div>
+              <div>
+                <span class="stat-icon green">${icon("calendar")}</span>
+                <p>
+                  <strong>04</strong>
+                  <small>Agenda mendatang</small>
+                </p>
+              </div>
+            </div>
+          </section>
+
+          <div class="home-grid">
+            <div>
+              <article class="hero-card">
+                <img src="${photos.hero}" alt="Mahasiswa Indonesia berkumpul" />
+                <div class="hero-copy">
+                  <span>SOROTAN KOMUNITAS</span>
+                  <h2>Ide kecil.<br />Dampak yang besar.</h2>
+                  <p>Cerita mahasiswa yang mengubah keresahan menjadi aksi nyata.</p>
+                  <button data-action="nav" data-page="Jelajahi">
+                    Jelajahi cerita ${icon("arrow", 16)}
+                  </button>
+                </div>
+                <i></i>
+              </article>
+
+              <div class="section-title">
+                <div>
+                  <p>RUANG DISKUSI</p>
+                  <h2>Sedang dibicarakan</h2>
+                </div>
+                <button data-action="open-composer">
+                  ${icon("plus", 16)} Mulai diskusi
+                </button>
+              </div>
+
+              <article class="post-card lift">
+                <div class="post-head">
+                  <img src="${avatar("nabila")}" alt="Nabila" />
+                  <div>
+                    <strong>Nabila Putri <span>${icon("check", 10)}</span></strong>
+                    <small>Teknik Lingkungan, ITB · 22 menit lalu</small>
+                  </div>
+                  ${icon("more")}
+                </div>
+                <span class="topic">#KampusBerkelanjutan</span>
+                <h3>Program kecil apa yang paling berdampak untuk membuat kampus lebih ramah lingkungan?</h3>
+                <p>Kami sedang menyusun gerakan minim sampah di kampus. Lebih baik mulai dari edukasi, fasilitas, atau regulasi?</p>
+                <div class="post-actions">
+                  <span>${likesCount} suka · 24 komentar</span>
+                  <div>
+                    <button class="${state.liked ? "active" : ""}" data-action="toggle-like">
+                      ${icon("heart", 18)} Suka
+                    </button>
+                    <button data-action="notify" data-msg="Kolom diskusi dibuka">
+                      ${icon("message", 18)}
+                    </button>
+                    <button data-action="notify" data-msg="Tautan disalin">
+                      ${icon("share", 18)}
+                    </button>
+                  </div>
+                </div>
+              </article>
+            </div>
+
+            <aside class="home-side">
+              <div class="side-card">
+                <div class="section-title compact">
+                  <div>
+                    <p>AGENDA PILIHAN</p>
+                    <h2>Minggu ini</h2>
+                  </div>
+                  <button data-action="nav" data-page="Agenda">Semua</button>
+                </div>
+                ${renderEventCard(events[0], 0, true)}
+              </div>
+
+              <div class="side-card pulse-card">
+                <span>${icon("spark", 18)}</span>
+                <div>
+                  <strong>Lengkapi profilmu</strong>
+                  <p>Profil lengkap meningkatkan peluang koneksi hingga 3×.</p>
+                  <button data-action="nav" data-page="Profil">Lengkapi sekarang</button>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderExplorePage() {
+      const topics = ["Semua", "Teknologi", "Kreatif", "Sosial", "Karier"];
+      const trending = ["#KampusBerdampak", "#MagangMerdeka", "#SkripsiTanpaDrama", "#VolunteerIndonesia"];
+      const counts = [248, 195, 174, 139];
+
+      return `
+        <div class="page-enter">
+          ${renderPageHeader({
+            eyebrow: "EKSPLORASI",
+            title: "Ada banyak hal untuk",
+            accent: "ditemukan.",
+            desc: "Temukan cerita, gagasan, dan mahasiswa inspiratif dari berbagai kampus."
+          })}
+
+          <div class="filter-row">
+            ${topics
+              .map(
+                (x) =>
+                  `<button class="${state.exploreTopic === x ? "active" : ""}" data-action="set-explore-topic" data-val="${x}">${x}</button>`
+              )
+              .join("")}
+          </div>
+
+          <section class="editorial-grid">
+            <article class="editorial-feature lift">
+              <img src="${photos.meetup}" alt="Mahasiswa berdiskusi" />
+              <div>
+                <span>EDITOR'S PICK</span>
+                <h2>Berani Memulai:<br />Lahirnya 50 Inovasi dari Kampus</h2>
+                <p>Bagaimana ruang kolaborasi lintas disiplin melahirkan solusi untuk masalah nyata.</p>
+                <button data-action="notify" data-msg="Artikel dibuka">
+                  Baca selengkapnya ${icon("arrow", 16)}
+                </button>
+              </div>
+            </article>
+
+            <article class="story-card lift">
+              <img src="${photos.social}" alt="Gerakan sosial mahasiswa" />
+              <span>SOSIAL</span>
+              <h3>Gerakan mahasiswa untuk pendidikan di pelosok negeri</h3>
+              <p>8 menit baca · 2 jam lalu</p>
+            </article>
+
+            <article class="story-card lift">
+              <img src="${photos.creative}" alt="Kegiatan kreatif mahasiswa" />
+              <span>KREATIF</span>
+              <h3>Pasar kreatif kampus yang merangkul 120 UMKM muda</h3>
+              <p>6 menit baca · Kemarin</p>
+            </article>
+          </section>
+
+          <div class="section-title">
+            <div>
+              <p>TRENDING</p>
+              <h2>Topik yang ramai minggu ini</h2>
+            </div>
+          </div>
+
+          <div class="trending-grid">
+            ${trending
+              .map(
+                (x, i) => `
+                <button class="trend-item" data-action="notify" data-msg="Menjelajahi ${x}">
+                  <b>0${i + 1}</b>
+                  <div>
+                    <strong>${x}</strong>
+                    <span>${counts[i]} diskusi baru</span>
+                  </div>
+                  ${icon("trending")}
+                </button>
+              `
+              )
+              .join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCommunitiesPage() {
+      const cats = ["Semua", "Teknologi", "Desain", "Sosial", "Bisnis", "Lingkungan"];
+      const shown = communityData
+        .map((item, idx) => ({ item, idx }))
+        .filter(({ item }) => state.communityCat === "Semua" || item.cat === state.communityCat);
+
+      return `
+        <div class="page-enter">
+          ${renderPageHeader({
+            eyebrow: "KOMUNITAS",
+            title: "Temukan",
+            accent: "lingkaranmu.",
+            desc: "Bertemu orang-orang satu frekuensi, bertukar gagasan, dan tumbuh bersama.",
+            actionHtml: `<button class="header-action" data-action="notify" data-msg="Form komunitas dibuka">${icon("plus", 17)} Buat Komunitas</button>`
+          })}
+
+          <div class="filter-row">
+            ${cats
+              .map(
+                (x) =>
+                  `<button class="${state.communityCat === x ? "active" : ""}" data-action="set-community-cat" data-val="${x}">${x}</button>`
+              )
+              .join("")}
+          </div>
+
+          <div class="community-grid">
+            ${shown.map(({ item, idx }) => renderCommunityCard(item, idx)).join("")}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAgendaPage() {
+      const bars = [35, 62, 48, 82, 58, 95, 71, 44, 65, 84, 53, 76];
+      const shown = events
+        .map((item, idx) => ({ item, idx }))
+        .filter(({ item }) => state.agendaView !== "Terdaftar" || state.registered.includes(item.title));
+
+      return `
+        <div class="page-enter">
+          ${renderPageHeader({
+            eyebrow: "AGENDA MAHASISWA",
+            title: "Hadir, terhubung,",
+            accent: "berkembang.",
+            desc: "Agenda pilihan untuk memperluas wawasan, pengalaman, dan jejaringmu.",
+            actionHtml: `<button class="header-action outline" data-action="notify" data-msg="Kalender Mei 2025">${icon("calendar", 17)} Mei 2025</button>`
+          })}
+
+          <div class="agenda-highlight">
+            <div>
+              <span>ACARA BULAN INI</span>
+              <strong>32</strong>
+              <p>agenda dari 18 kota</p>
+            </div>
+            <div class="agenda-bars">
+              ${bars.map((h) => `<i style="height: ${h}%"></i>`).join("")}
+            </div>
+            <p><b>+18%</b> lebih banyak kegiatan dari bulan lalu</p>
+          </div>
+
+          <div class="filter-row">
+            <button class="${state.agendaView === "Mendatang" ? "active" : ""}" data-action="set-agenda-view" data-val="Mendatang">Mendatang</button>
+            <button class="${state.agendaView === "Terdaftar" ? "active" : ""}" data-action="set-agenda-view" data-val="Terdaftar">Terdaftar (${state.registered.length})</button>
+            <button class="${state.agendaView === "Selesai" ? "active" : ""}" data-action="set-agenda-view" data-val="Selesai">Selesai</button>
+          </div>
+
+          <div class="events-grid">
+            ${shown.map(({ item, idx }) => renderEventCard(item, idx, false)).join("")}
+          </div>
+
+          ${
+            state.agendaView === "Terdaftar" && state.registered.length === 0
+              ? renderEmpty({
+                  iconName: "calendar",
+                  title: "Belum ada agenda terdaftar",
+                  text: "Temukan agenda menarik dan mulai memperluas jejaringmu."
+                })
+              : ""
+          }
+        </div>
+      `;
+    }
+
+    function renderOpportunitiesPage() {
+      const kinds = ["Semua", "Magang", "Beasiswa", "Relawan", "Exchange"];
+      const shown = opportunities
+        .map((item, idx) => ({ item, idx }))
+        .filter(({ item }) => state.oppKind === "Semua" || item.kind === state.oppKind);
+
+      return `
+        <div class="page-enter">
+          ${renderPageHeader({
+            eyebrow: "PELUANG",
+            title: "Langkah kecil menuju",
+            accent: "masa depan.",
+            desc: "Magang, beasiswa, kompetisi, dan kesempatan terbaik yang dikurasi untuk mahasiswa."
+          })}
+
+          <section class="opportunity-hero">
+            <div>
+              <span>PROGRAM UNGGULAN</span>
+              <h2>Future Changemakers<br />Fellowship 2025</h2>
+              <p>Program pengembangan pemimpin muda selama 6 bulan dengan mentor profesional.</p>
+              <button data-action="notify" data-msg="Detail fellowship dibuka">
+                Lihat program ${icon("arrow", 16)}
+              </button>
+            </div>
+            <div class="orb">
+              ${icon("award", 48)}
+              <i></i>
+              <i></i>
+            </div>
+          </section>
+
+          <div class="filter-row">
+            ${kinds
+              .map(
+                (x) =>
+                  `<button class="${state.oppKind === x ? "active" : ""}" data-action="set-opp-kind" data-val="${x}">${x}</button>`
+              )
+              .join("")}
+          </div>
+
+          <div class="opportunity-layout">
+            <div class="opportunity-list">
+              ${shown
+                .map(({ item, idx }) => {
+                  const isSaved = state.savedOpp.includes(item.role);
+                  return `
+                    <article class="opportunity-row lift">
+                      <div class="opp-logo" style="background: ${item.color}">${item.logo}</div>
+                      <div>
+                        <span>${item.kind}</span>
+                        <h3>${item.role}</h3>
+                        <p>${item.org} · ${item.location}</p>
+                      </div>
+                      <div class="deadline">
+                        <small>Ditutup</small>
+                        <b>${item.deadline}</b>
+                      </div>
+                      <button class="${isSaved ? "saved" : ""}" data-action="toggle-save-opp" data-idx="${idx}">
+                        ${icon("bookmark", 18)}
+                      </button>
+                    </article>
+                  `;
+                })
+                .join("")}
+            </div>
+
+            <aside class="career-card">
+              <span>${icon("spark", 21)}</span>
+              <h3>Career Match</h3>
+              <p>Jawab 5 pertanyaan dan temukan peluang yang paling cocok untukmu.</p>
+              <div><i style="width: 72%"></i></div>
+              <small>Profil karier 72% lengkap</small>
+              <button data-action="notify" data-msg="Career Match dimulai">Lanjutkan asesmen</button>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderSavedPage() {
+      const tabs = ["Semua", "Diskusi", "Artikel", "Agenda", "Peluang"];
+      const showDiskusi = state.saved && (state.savedTab === "Semua" || state.savedTab === "Diskusi");
+      const showPeluang = state.savedTab === "Semua" || state.savedTab === "Peluang";
+      const visibleOpp = showPeluang ? state.savedOpp : [];
+      const totalShown = (showDiskusi ? 1 : 0) + visibleOpp.length;
+
+      return `
+        <div class="page-enter">
+          ${renderPageHeader({
+            eyebrow: "KOLEKSI PRIBADI",
+            title: "Semua yang ingin kamu",
+            accent: "ingat.",
+            desc: "Kumpulan diskusi, agenda, artikel, dan peluang yang kamu simpan."
+          })}
+
+          <div class="filter-row">
+            ${tabs
+              .map(
+                (x) =>
+                  `<button class="${state.savedTab === x ? "active" : ""}" data-action="set-saved-tab" data-val="${x}">${x}</button>`
+              )
+              .join("")}
+          </div>
+
+          ${
+            totalShown === 0
+              ? renderEmpty({
+                  iconName: "bookmark",
+                  title: "Koleksimu masih kosong",
+                  text: "Simpan hal menarik dari halaman lain agar mudah ditemukan kembali.",
+                  hasAction: true
+                })
+              : `
+                <div class="saved-grid">
+                  ${
+                    showDiskusi
+                      ? `
+                        <article class="saved-card lift">
+                          <span class="saved-type">DISKUSI</span>
+                          <div class="saved-author">
+                            <img src="${avatar("nabila")}" alt="" />
+                            <p>
+                              <b>Nabila Putri</b>
+                              <small>ITB · 22 menit lalu</small>
+                            </p>
+                          </div>
+                          <h3>Program kecil apa yang paling berdampak untuk kampus berkelanjutan?</h3>
+                          <button data-action="unsave-post" title="Hapus dari tersimpan">
+                            ${icon("bookmark", 18)}
+                          </button>
+                        </article>
+                      `
+                      : ""
+                  }
+                  ${visibleOpp
+                    .map((role) => {
+                      const idx = opportunities.findIndex((o) => o.role === role);
+                      const x = opportunities[idx];
+                      if (!x) return "";
+                      return `
+                        <article class="saved-card lift">
+                          <span class="saved-type green">${x.kind}</span>
+                          <div class="saved-company">
+                            <div style="background: ${x.color}">${x.logo}</div>
+                            <p>
+                              <b>${x.org}</b>
+                              <small>${x.location}</small>
+                            </p>
+                          </div>
+                          <h3>${x.role}</h3>
+                          <button data-action="toggle-save-opp" data-idx="${idx}" title="Hapus dari tersimpan">
+                            ${icon("bookmark", 18)}
+                          </button>
+                        </article>
+                      `;
+                    })
+                    .join("")}
+                </div>
+              `
+          }
+        </div>
+      `;
+    }
+
+    function renderProfilePage() {
+      const skills = ["Community Building", "Public Speaking", "Content Strategy", "Leadership"];
+      const activities = [
+        { text: "Membagikan diskusi di Kampus Berkelanjutan", icon: "message" },
+        { text: "Mengikuti Design Leadership Talk", icon: "calendar" },
+        { text: "Bergabung dengan GDSC Indonesia", icon: "users" }
+      ];
+
+      return `
+        <div class="page-enter">
+          <section class="profile-cover">
+            <img src="${photos.students}" alt="Kehidupan kampus" />
+            <button data-action="notify" data-msg="Pengubah sampul dibuka">
+              ${icon("image", 16)} Ubah sampul
+            </button>
+          </section>
+
+          <section class="profile-head">
+            <div class="profile-avatar">
+              <img src="${avatar("KEPIN")}" alt="KEPIN" />
+              <i></i>
+            </div>
+            <div>
+              <h1>KEPIN <span>${icon("check", 12)}</span></h1>
+              <p>Mahasiswa TEKNIK INFORMATIKA · Universitas Kristen Satya Wacana</p>
+              <div>
+                <span>${icon("pin", 14)} Salatiga, Indonesia</span>
+                <span>182 koneksi</span>
+              </div>
+            </div>
+            <button data-action="notify" data-msg="Editor profil dibuka">
+              ${icon("edit", 16)} Edit Profil
+            </button>
+          </section>
+
+          <div class="profile-layout">
+            <div>
+              <section class="profile-section">
+                <div class="section-title compact">
+                  <div>
+                    <p>TENTANG</p>
+                    <h2>Cerita singkat</h2>
+                  </div>
+                  <button data-action="notify" data-msg="Edit deskripsi singkat">${icon("edit", 15)}</button>
+                </div>
+                <p class="bio">
+                  Tertarik pada komunikasi, pengembangan komunitas, dan inovasi sosial. Saat ini aktif
+                  membangun ruang kolaborasi untuk mahasiswa di seluruh Indonesia.
+                </p>
+                <div class="skill-list">
+                  ${skills.map((x) => `<span>${x}</span>`).join("")}
+                </div>
+              </section>
+
+              <section class="profile-section">
+                <div class="section-title compact">
+                  <div>
+                    <p>AKTIVITAS</p>
+                    <h2>Kontribusi terbaru</h2>
+                  </div>
+                </div>
+                ${activities
+                  .map(
+                    (a, i) => `
+                    <div class="activity">
+                      <span>${icon(a.icon, 17)}</span>
+                      <div>
+                        <strong>${a.text}</strong>
+                        <small>${i + 1} hari lalu</small>
+                      </div>
+                    </div>
+                  `
+                  )
+                  .join("")}
+              </section>
+            </div>
+
+            <aside>
+              <section class="profile-section profile-score">
+                <div class="score-ring">
+                  <div>
+                    <strong>82</strong>
+                    <small>%</small>
+                  </div>
+                </div>
+                <h3>Profilmu hampir lengkap</h3>
+                <p>Tambahkan portofolio untuk meningkatkan visibilitas.</p>
+                <button data-action="notify" data-msg="Form portofolio dibuka">Tambah portofolio</button>
+              </section>
+
+              <section class="profile-section">
+                <div class="section-title compact">
+                  <div>
+                    <p>PENCAPAIAN</p>
+                    <h2>Lencana</h2>
+                  </div>
+                </div>
+                <div class="badges">
+                  <div>${icon("award")}<span>Kolaborator</span></div>
+                  <div>${icon("spark")}<span>Penggerak</span></div>
+                  <div>${icon("book")}<span>Pembelajar</span></div>
+                </div>
+              </section>
+            </aside>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderCurrentPage() {
+      switch (state.page) {
+        case "Jelajahi":
+          return renderExplorePage();
+        case "Komunitas":
+          return renderCommunitiesPage();
+        case "Agenda":
+          return renderAgendaPage();
+        case "Peluang":
+          return renderOpportunitiesPage();
+        case "Tersimpan":
+          return renderSavedPage();
+        case "Profil":
+          return renderProfilePage();
+        default:
+          return renderHomePage();
+      }
+    }
+
+    function render() {
+      const activeEl = document.activeElement;
+      const focusedId = activeEl ? activeEl.id : null;
+      const selStart = activeEl && typeof activeEl.selectionStart === "number" ? activeEl.selectionStart : null;
+
+      const root = document.getElementById("app");
+      root.innerHTML = `
+        <aside class="sidebar ${state.mobile ? "open" : ""}">
+          <div class="brand">
+            <div class="brand-mark">n</div>
+            <div>
+              <strong>Wifi Tetangga</strong>
+              <small>RUANG MAHASISWA</small>
+            </div>
+          </div>
+          <button class="mobile-close" data-action="close-mobile" aria-label="Tutup menu">
+            ${icon("x")}
+          </button>
+          <nav>
+            <p>MENU UTAMA</p>
+            ${navItems
+              .map(
+                (x) => `
+                <button class="${state.page === x.label ? "active" : ""}" data-action="nav" data-page="${x.label}">
+                  ${icon(x.icon, 19)}
+                  <span>${x.label}</span>
+                  ${x.label === "Agenda" ? `<b>${state.registered.length || 3}</b>` : ""}
+                </button>
+              `
+              )
+              .join("")}
+          </nav>
+
+          <div class="sidebar-promo">
+            <span>${icon("spark", 19)}</span>
+            <strong>Punya komunitas?</strong>
+            <p>Bangun ruang kolaborasi untuk mahasiswa se-Indonesia.</p>
+            <button data-action="nav" data-page="Komunitas">
+              Mulai sekarang ${icon("arrow", 14)}
+            </button>
+          </div>
+
+          <button class="sidebar-user" data-action="nav" data-page="Profil">
+            <img src="${avatar("KEPIN")}" alt="KEPIN" />
+            <div>
+              <strong>KEPIN</strong>
+              <small>Universitas Kristen Satya Wacana</small>
+            </div>
+            ${icon("more", 17)}
+          </button>
+        </aside>
+
+        ${state.mobile ? `<button class="screen-backdrop" data-action="close-mobile" aria-label="Tutup"></button>` : ""}
+
+        <main class="main">
+          <header class="topbar">
+            <button class="menu-button" data-action="open-mobile" aria-label="Buka menu">
+              ${icon("menu")}
+            </button>
+
+            <div class="search-box">
+              ${icon("search", 18)}
+              <input
+                id="search-input"
+                type="text"
+                value="${esc(state.search)}"
+                placeholder="Cari komunitas, agenda, atau peluang..."
+              />
+              ${
+                state.search
+                  ? `<button data-action="clear-search" aria-label="Hapus pencarian">${icon("x", 15)}</button>`
+                  : ""
+              }
+              <kbd>⌘ K</kbd>
+            </div>
+
+            <div class="top-actions">
+              <div class="notification-wrap">
+                <button class="icon-button" data-action="toggle-notif" aria-label="Notifikasi">
+                  ${icon("bell")}
+                  <i></i>
+                </button>
+                ${
+                  state.notif
+                    ? `
+                      <div class="notification-panel">
+                        <div>
+                          <strong>Notifikasi</strong>
+                          <button data-action="close-notif">Tutup</button>
+                        </div>
+                        <article>
+                          <span class="purple"></span>
+                          <p>
+                            <b>Dinda membalas diskusimu</b>
+                            <small>5 menit lalu</small>
+                          </p>
+                        </article>
+                        <article>
+                          <span class="green"></span>
+                          <p>
+                            <b>Pendaftaran acara berhasil</b>
+                            <small>1 jam lalu</small>
+                          </p>
+                        </article>
+                        <article>
+                          <span class="coral"></span>
+                          <p>
+                            <b>3 peluang baru untukmu</b>
+                            <small>Hari ini</small>
+                          </p>
+                        </article>
+                      </div>
+                    `
+                    : ""
+                }
+              </div>
+
+              <button class="primary-button" data-action="open-composer">
+                ${icon("plus", 17)}
+                <span>Buat Diskusi</span>
+              </button>
+            </div>
+          </header>
+
+          <div class="content">
+            ${
+              state.search
+                ? `
+                  <div class="search-notice">
+                    ${icon("search", 16)} Menampilkan hasil untuk <b>“${esc(state.search)}”</b>
+                    <button data-action="clear-search">Hapus</button>
+                  </div>
+                `
+                : ""
+            }
+            ${renderCurrentPage()}
+            <footer>
+              <span>© 2025 Wifi Tetangga</span>
+              <div>
+                <a href="#tentang" data-action="notify" data-msg="Halaman Tentang">Tentang</a>
+                <a href="#panduan" data-action="notify" data-msg="Halaman Panduan">Panduan</a>
+                <a href="#privasi" data-action="notify" data-msg="Kebijakan Privasi">Privasi</a>
+                <a href="#bantuan" data-action="notify" data-msg="Pusat Bantuan">Bantuan</a>
+              </div>
+            </footer>
+          </div>
+        </main>
+
+        ${
+          state.composer
+            ? `
+              <div class="modal">
+                <button class="modal-bg" data-action="close-composer" aria-label="Tutup modal"></button>
+                <div class="composer">
+                  <div class="composer-head">
+                    <div>
+                      <p>RUANG DISKUSI</p>
+                      <h2>Mulai percakapan baru</h2>
+                    </div>
+                    <button data-action="close-composer" aria-label="Tutup">${icon("x")}</button>
+                  </div>
+                  <div class="composer-user">
+                    <img src="${avatar("KEPIN")}" alt="" />
+                    <p>
+                      <b>KEPIN</b>
+                      <small>Posting ke komunitas umum</small>
+                    </p>
+                    ${icon("chevron", 16)}
+                  </div>
+                  <textarea
+                    id="composer-textarea"
+                    placeholder="Bagikan ide, pertanyaan, atau kabar baikmu..."
+                  >${esc(state.post)}</textarea>
+                  <div class="composer-foot">
+                    <button data-action="notify" data-msg="Pemilih gambar dibuka">
+                      ${icon("image", 18)} Tambah gambar
+                    </button>
+                    <button id="publish-btn" data-action="publish-post" ${!state.post.trim() ? "disabled" : ""}>
+                      Terbitkan ${icon("send", 15)}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            `
+            : ""
+        }
+
+        ${
+          state.toast
+            ? `
+              <div class="toast">
+                ${icon("check", 17)}
+                ${esc(state.toast)}
+              </div>
+            `
+            : ""
+        }
+      `;
+
+      if (focusedId) {
+        const el = document.getElementById(focusedId);
+        if (el) {
+          el.focus();
+          if (selStart !== null && typeof el.setSelectionRange === "function") {
+            el.setSelectionRange(selStart, selStart);
+          }
+        }
+      }
+    }
+
+    document.addEventListener("click", (e) => {
+      const target = e.target.closest("[data-action]");
+      if (!target) return;
+      e.preventDefault();
+
+      const action = target.dataset.action;
+      switch (action) {
+        case "nav":
+          navigate(target.dataset.page);
+          break;
+        case "open-mobile":
+          state.mobile = true;
+          render();
+          break;
+        case "close-mobile":
+          state.mobile = false;
+          render();
+          break;
+        case "toggle-notif":
+          state.notif = !state.notif;
+          render();
+          break;
+        case "close-notif":
+          state.notif = false;
+          render();
+          break;
+        case "open-composer":
+          state.composer = true;
+          render();
+          setTimeout(() => {
+            const ta = document.getElementById("composer-textarea");
+            if (ta) ta.focus();
+          }, 10);
+          break;
+        case "close-composer":
+          state.composer = false;
+          render();
+          break;
+        case "publish-post":
+          if (state.post.trim()) {
+            state.composer = false;
+            state.post = "";
+            notify("Diskusi berhasil diterbitkan");
+          }
+          break;
+        case "clear-search":
+          state.search = "";
+          render();
+          break;
+        case "toggle-like":
+          state.liked = !state.liked;
+          render();
+          break;
+        case "home-event-reg":
+          notify("Pendaftaran acara dibuka");
+          break;
+        case "toggle-join": {
+          const item = communityData[Number(target.dataset.idx)];
+          if (item) {
+            toggleList(
+              state.joined,
+              item.name,
+              `Bergabung dengan ${item.name}`,
+              `Keluar dari ${item.name}`
+            );
+          }
+          break;
+        }
+        case "toggle-register": {
+          const item = events[Number(target.dataset.idx)];
+          if (item) {
+            toggleList(
+              state.registered,
+              item.title,
+              `Terdaftar di ${item.title}`,
+              `Pendaftaran ${item.title} dibatalkan`
+            );
+          }
+          break;
+        }
+        case "toggle-save-opp": {
+          const item = opportunities[Number(target.dataset.idx)];
+          if (item) {
+            toggleList(
+              state.savedOpp,
+              item.role,
+              `${item.role} disimpan`,
+              `${item.role} dihapus dari tersimpan`
+            );
+          }
+          break;
+        }
+        case "unsave-post":
+          state.saved = false;
+          notify("Diskusi dihapus dari tersimpan");
+          break;
+        case "set-explore-topic":
+          state.exploreTopic = target.dataset.val;
+          render();
+          break;
+        case "set-community-cat":
+          state.communityCat = target.dataset.val;
+          render();
+          break;
+        case "set-agenda-view":
+          state.agendaView = target.dataset.val;
+          render();
+          break;
+        case "set-opp-kind":
+          state.oppKind = target.dataset.val;
+          render();
+          break;
+        case "set-saved-tab":
+          state.savedTab = target.dataset.val;
+          render();
+          break;
+        case "notify":
+          notify(target.dataset.msg || "Aksi dijalankan");
+          break;
+      }
+    });
+
+    document.addEventListener("input", (e) => {
+      if (e.target.id === "search-input") {
+        state.search = e.target.value;
+        render();
+      } else if (e.target.id === "composer-textarea") {
+        state.post = e.target.value;
+        const btn = document.getElementById("publish-btn");
+        if (btn) btn.disabled = !state.post.trim();
+      }
+    });
+
+    document.addEventListener("keydown", (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        const input = document.getElementById("search-input");
+        if (input) input.focus();
+      } else if (e.key === "Escape") {
+        if (state.composer || state.notif || state.mobile) {
+          state.composer = false;
+          state.notif = false;
+          state.mobile = false;
+          render();
+        }
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
